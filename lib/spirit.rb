@@ -5,16 +5,16 @@ Sequel.extension :pg_hstore, :pg_hstore_ops
 module Spirit
   MissingID = Class.new(StandardError)
 
-  def self.connect(url = ENV['DATABASE_URL'])
+  def self.url=(url = ENV['DATABASE_URL'])
     @_url = url
   end
 
-  def self.database_url
+  def self.url
     @_url ||= ENV['DATABASE_URL']
   end
 
   def self.connection
-    @_connection ||= Sequel.connect(database_url)
+    @_connection ||= Sequel.connect(url)
   end
 
   class Model

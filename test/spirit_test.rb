@@ -1,10 +1,6 @@
 require 'cutest'
 require 'spirit'
 
-setup do
-  Spirit.connect
-end
-
 Model = Class.new(Spirit::Model)
 
 class User < Spirit::Model
@@ -32,4 +28,7 @@ test 'update' do
 
   assert_equal user.name, 'cyx'
   assert_equal user.id, id
+
+  user.update(name: 'Ciril')
+  assert_equal user.name, 'Ciril'
 end
