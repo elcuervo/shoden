@@ -20,7 +20,7 @@ module Spirit
   class Model
     def initialize(attrs = {})
       @attributes = Sequel.hstore({})
-      update_attributes(attrs)
+      update(attrs)
     end
 
     def id
@@ -28,16 +28,9 @@ module Spirit
       @_id
     end
 
-    def update_attributes(attrs)
+    def update(attrs = {})
       attrs.each { |name, value| send(:"#{name}=", value) }
-    end
-
-    def table_name
-      self.class.name.to_sym
-    end
-
-    def conn
-      Spirit.connection
+      save
     end
 
     def save
@@ -46,8 +39,6 @@ module Spirit
         primary_key :id
         hstore      :data
       end
-
-      table = conn[table_name]
 
       if defined? @_id
         table.update data: @attributes
@@ -65,6 +56,20 @@ module Spirit
     def self.attribute(name)
       define_method(name) { @attributes[name] }
       define_method(:"#{name}=") { |value| @attributes[name] = value }
+    end
+
+    private
+
+    def table_name
+      self.class.name.to_sym
+    end
+
+    def table
+      conn[table_name]
+    end
+
+    def conn
+      Spirit.connection
     end
   end
 end
