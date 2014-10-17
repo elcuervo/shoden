@@ -12,11 +12,9 @@ module Spirit
         key => parent.id
       ))
     end
-
-    private
   end
 
-  def self.url=(url = ENV['DATABASE_URL'])
+  def self.url=(url)
     @_url = url
   end
 

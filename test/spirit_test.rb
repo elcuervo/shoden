@@ -18,10 +18,10 @@ test 'attributes' do
 end
 
 test 'update' do
-  user = User.create name: 'Ciril'
+  user = User.create name: 'Cyril'
   id = user.id
 
-  assert_equal user.name, 'Ciril'
+  assert_equal user.name, 'Cyril'
 
   user.name = 'cyx'
   user.save
@@ -29,8 +29,8 @@ test 'update' do
   assert_equal user.name, 'cyx'
   assert_equal user.id, id
 
-  user.update_attributes(name: 'Ciril')
-  assert_equal user.name, 'Ciril'
+  user.update_attributes(name: 'Cyril')
+  assert_equal user.name, 'Cyril'
 end
 
 test 'relations' do
