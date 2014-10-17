@@ -29,6 +29,28 @@ test 'update' do
   assert_equal user.name, 'cyx'
   assert_equal user.id, id
 
-  user.update(name: 'Ciril')
+  user.update_attributes(name: 'Ciril')
   assert_equal user.name, 'Ciril'
+end
+
+test 'relations' do
+  class Tree < Spirit::Model
+    attribute   :name
+    collection  :sprouts, :Sprout
+  end
+
+  class Sprout < Spirit::Model
+    attribute :leaves
+    reference :tree, :Tree
+  end
+
+  tree = Tree.create(name: 'asd')
+
+  assert tree.id
+  assert_equal tree.name, 'asd'
+
+  sprout = tree.sprouts.create(leaves: 4)
+
+  assert sprout.is_a?(Sprout)
+  assert_equal sprout.tree.id, tree.id
 end
