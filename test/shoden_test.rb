@@ -58,3 +58,12 @@ test 'relations' do
   assert sprout.is_a?(Sprout)
   assert_equal sprout.tree.id, tree.id
 end
+
+test 'deletion' do
+  user = User.create(name: 'Damian')
+  id = user.id
+
+  user.destroy
+
+  assert_raise(Shoden::NotFound) { User[id] }
+end

@@ -4,6 +4,7 @@ Sequel.extension :pg_hstore, :pg_hstore_ops
 
 module Shoden
   MissingID = Class.new(StandardError)
+  NotFound  = Class.new(StandardError)
 
   Proxy = Struct.new(:klass, :parent) do
     def create(args = {})
@@ -44,6 +45,10 @@ module Shoden
       @_id.to_i
     end
 
+    def destroy
+      lookup(id).delete
+    end
+
     def update(attrs = {})
       attrs.each { |name, value| send(:"#{name}=", value) }
     end
@@ -66,7 +71,7 @@ module Shoden
     end
 
     def load!
-      ret = table.where(id: @_id)
+      ret = lookup(@_id)
       update(ret.to_a.first[:data])
       self
     end
@@ -111,6 +116,13 @@ module Shoden
         match(/^(?:.*::)*(.*)$/)[1].
         gsub(/([a-z\d])([A-Z])/, '\1_\2').
         downcase.to_sym
+    end
+
+    def lookup(id)
+      row = table.where(id: id)
+      raise NotFound if !row.any?
+
+      row
     end
 
     def setup
