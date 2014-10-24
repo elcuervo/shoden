@@ -1,5 +1,7 @@
 # Shoden
 
+![Elephant god](http://www.redprintdna.com/wp-content/uploads/2011/09/L-Elephant-Against-Sky.jpg)
+
 Shoden is a persistance library on top of Postgres.
 It is basically an [Ohm](https://github.com/soveran/ohm) clone but using
 Postgres as a main database.
