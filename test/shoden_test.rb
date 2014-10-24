@@ -7,6 +7,10 @@ class User < Shoden::Model
   attribute :name
 end
 
+setup do
+  Shoden.destroy_all
+end
+
 test 'model' do
   model = Model.create
   assert_equal model.id.class, Fixnum

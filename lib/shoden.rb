@@ -26,6 +26,12 @@ module Shoden
     @_connection ||= Sequel.connect(url)
   end
 
+  def self.destroy_all
+    connection.tables.select do |t|
+      connection.drop_table(t) if t.to_s.start_with?('Shoden::')
+    end
+  end
+
   class Model
     def initialize(attrs = {})
       @_id = attrs.delete(:id) if attrs[:id]
@@ -48,11 +54,7 @@ module Shoden
     end
 
     def save
-      conn.execute("CREATE EXTENSION IF NOT EXISTS hstore")
-      conn.create_table? table_name do
-        primary_key :id
-        hstore      :data
-      end
+      @created ||= setup
 
       if defined? @_id
         table.where(id: @_id).update data: @attributes
@@ -109,6 +111,14 @@ module Shoden
         match(/^(?:.*::)*(.*)$/)[1].
         gsub(/([a-z\d])([A-Z])/, '\1_\2').
         downcase.to_sym
+    end
+
+    def setup
+      conn.execute("CREATE EXTENSION IF NOT EXISTS hstore")
+      conn.create_table? table_name do
+        primary_key :id
+        hstore      :data
+      end
     end
 
     def table_name
