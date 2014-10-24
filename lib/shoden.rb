@@ -143,7 +143,7 @@ module Shoden
 
     def conn
       c = Shoden.connection
-      setup
+      @created ||= setup
       c
     end
   end
