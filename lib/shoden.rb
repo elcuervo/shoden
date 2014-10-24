@@ -59,8 +59,6 @@ module Shoden
     end
 
     def save
-      @created ||= setup
-
       if defined? @_id
         table.where(id: @_id).update data: @attributes
       else
@@ -104,7 +102,7 @@ module Shoden
       define_method(writer) { |value| @attributes[reader] = value }
 
       define_method(name) do
-        klass = Kernel.const_get(model)
+        klass = Kernel.const_get("Shoden::#{model}")
         klass[send(reader)]
       end
     end
@@ -119,6 +117,8 @@ module Shoden
     end
 
     def lookup(id)
+      raise NotFound if !conn.tables.include?(table_name.to_sym)
+
       row = table.where(id: id)
       raise NotFound if !row.any?
 
@@ -126,8 +126,8 @@ module Shoden
     end
 
     def setup
-      conn.execute("CREATE EXTENSION IF NOT EXISTS hstore")
-      conn.create_table? table_name do
+      Shoden.connection.execute("CREATE EXTENSION IF NOT EXISTS hstore")
+      Shoden.connection.create_table? table_name do
         primary_key :id
         hstore      :data
       end
@@ -142,7 +142,9 @@ module Shoden
     end
 
     def conn
-      Shoden.connection
+      c = Shoden.connection
+      setup
+      c
     end
   end
 end
