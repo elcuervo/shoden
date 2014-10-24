@@ -1,9 +1,9 @@
 require 'cutest'
-require 'spirit'
+require 'shoden'
 
-Model = Class.new(Spirit::Model)
+Model = Class.new(Shoden::Model)
 
-class User < Spirit::Model
+class User < Shoden::Model
   attribute :name
 end
 
@@ -34,12 +34,12 @@ test 'update' do
 end
 
 test 'relations' do
-  class Tree < Spirit::Model
+  class Tree < Shoden::Model
     attribute   :name
     collection  :sprouts, :Sprout
   end
 
-  class Sprout < Spirit::Model
+  class Sprout < Shoden::Model
     attribute :leaves
     reference :tree, :Tree
   end

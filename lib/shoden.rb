@@ -2,7 +2,7 @@ require 'sequel'
 
 Sequel.extension :pg_hstore, :pg_hstore_ops
 
-module Spirit
+module Shoden
   MissingID = Class.new(StandardError)
 
   Proxy = Struct.new(:klass, :parent) do
@@ -112,7 +112,7 @@ module Spirit
     end
 
     def table_name
-      :"Spirit::#{self.class.name}"
+      :"Shoden::#{self.class.name}"
     end
 
     def table
@@ -120,7 +120,7 @@ module Spirit
     end
 
     def conn
-      Spirit.connection
+      Shoden.connection
     end
   end
 end
