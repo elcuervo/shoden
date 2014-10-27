@@ -67,3 +67,14 @@ test 'deletion' do
 
   assert_raise(Shoden::NotFound) { User[id] }
 end
+
+test 'casting' do
+  class A < Shoden::Model
+    attribute :n, ->(x) { x.to_i }
+  end
+
+  a = A.create(n: 1)
+  a_prime = A[a.id]
+
+  assert_equal a_prime.n, 1
+end

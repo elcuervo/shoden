@@ -82,8 +82,13 @@ module Shoden
       new(id: id).load!
     end
 
-    def self.attribute(name)
-      define_method(name) { @attributes[name] }
+    def self.attribute(name, caster = nil)
+      if caster
+        define_method(name) { caster[@attributes[name]] }
+      else
+        define_method(name) { @attributes[name] }
+      end
+
       define_method(:"#{name}=") { |value| @attributes[name] = value }
     end
 
