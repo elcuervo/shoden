@@ -78,17 +78,18 @@ module Shoden
       new(attrs).save
     end
 
+    def self.attributes
+      @attributes ||= []
+    end
+
     def self.[](id)
       new(id: id).load!
     end
 
-    def self.attribute(name, caster = nil)
-      if caster
-        define_method(name) { caster[@attributes[name]] }
-      else
-        define_method(name) { @attributes[name] }
-      end
+    def self.attribute(name, caster = ->(x) { x })
+      attributes << name if !attributes.include?(name)
 
+      define_method(name) { caster[@attributes[name]] }
       define_method(:"#{name}=") { |value| @attributes[name] = value }
     end
 
@@ -102,6 +103,8 @@ module Shoden
     def self.reference(name, model)
       reader = :"#{name}_id"
       writer = :"#{name}_id="
+
+      attributes << name if !attributes.include?(name)
 
       define_method(reader) { @attributes[reader] }
       define_method(writer) { |value| @attributes[reader] = value }
