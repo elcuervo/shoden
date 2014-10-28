@@ -36,7 +36,7 @@ module Shoden
   class Model
     def initialize(attrs = {})
       @_id = attrs.delete(:id) if attrs[:id]
-      @attributes = Sequel::Postgres::HStore.new({})
+      @attributes = {}
       update(attrs)
     end
 
@@ -60,9 +60,9 @@ module Shoden
 
     def save
       if defined? @_id
-        table.where(id: @_id).update data: @attributes
+        table.where(id: @_id).update data: sanitized_attrs
       else
-        @_id = table.insert data: @attributes
+        @_id = table.insert data: sanitized_attrs
       end
 
       self
@@ -119,6 +119,17 @@ module Shoden
         match(/^(?:.*::)*(.*)$/)[1].
         gsub(/([a-z\d])([A-Z])/, '\1_\2').
         downcase.to_sym
+    end
+
+    def sanitized_attrs
+      sanitized = @attributes.map do |k, _|
+        val = send(k)
+        return if !val
+
+        [k, val.to_s]
+      end.compact
+
+      Sequel::Postgres::HStore.new(sanitized)
     end
 
     def lookup(id)
