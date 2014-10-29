@@ -1,4 +1,4 @@
-# Shôden
+# Shôden - [![Gem Version](https://badge.fury.io/rb/shoden.svg)](http://badge.fury.io/rb/shoden)
 
 ![Elephant god](http://www.redprintdna.com/wp-content/uploads/2011/09/L-Elephant-Against-Sky.jpg)
 
