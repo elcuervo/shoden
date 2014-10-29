@@ -96,3 +96,11 @@ test 'indices' do
     Person.create(email: 'elcuervo@elcuervo.net', origin: 'Montevideo City')
   end
 end
+
+test 'basic querying' do
+  5.times { User.create }
+
+  assert_equal User.all.size, 5
+  assert_equal User.first.id, 1
+  assert_equal User.last.id,  5
+end

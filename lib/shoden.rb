@@ -83,6 +83,18 @@ module Shoden
       self
     end
 
+    def self.all
+      collect
+    end
+
+    def self.first
+      collect("ORDER BY id ASC LIMIT 1").first
+    end
+
+    def self.last
+      collect("ORDER BY id DESC LIMIT 1").first
+    end
+
     def self.create(attrs = {})
       new(attrs).save
     end
@@ -142,6 +154,19 @@ module Shoden
 
     private
 
+    def self.collect(condition = '')
+      models = []
+      Shoden.connection.fetch("SELECT * FROM \"#{table_name}\" #{condition}") do |r|
+        attrs = r[:data].merge(id: r[:id])
+        models << new(attrs)
+      end
+      models
+    end
+
+    def self.table_name
+      :"Shoden::#{self.name}"
+    end
+
     def self.to_reference
       name.to_s.
         match(/^(?:.*::)*(.*)$/)[1].
@@ -186,7 +211,7 @@ EOS
     end
 
     def table_name
-      :"Shoden::#{self.class.name}"
+      self.class.table_name
     end
 
     def table
