@@ -185,8 +185,7 @@ EOS
     def sanitized_attrs
       sanitized = @attributes.map do |k, _|
         val = send(k)
-        return if !val
-
+        return if val.nil?
         [k, val.to_s]
       end.compact
 
