@@ -93,7 +93,6 @@ test 'indices' do
   assert person.id
 
   assert_raise Shoden::UniqueIndexViolation do
-    Person.create(email: 'elcuervo@elcuervo.net', origin: 'The internerd')
+    Person.create(email: 'elcuervo@elcuervo.net', origin: 'Montevideo City')
   end
-
 end
