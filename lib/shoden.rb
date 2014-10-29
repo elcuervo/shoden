@@ -3,8 +3,10 @@ require 'sequel'
 Sequel.extension :pg_hstore, :pg_hstore_ops
 
 module Shoden
-  MissingID = Class.new(StandardError)
-  NotFound  = Class.new(StandardError)
+  Error                = Class.new(StandardError)
+  MissingID            = Class.new(Error)
+  NotFound             = Class.new(Error)
+  UniqueIndexViolation = Class.new(Error)
 
   Proxy = Struct.new(:klass, :parent) do
     def create(args = {})
@@ -62,8 +64,15 @@ module Shoden
       if defined? @_id
         table.where(id: @_id).update data: sanitized_attrs
       else
-        @_id = table.insert data: sanitized_attrs
+        begin
+          @_id = table.insert data: sanitized_attrs
+        rescue Sequel::UniqueConstraintViolation
+          raise UniqueIndexViolation
+        end
       end
+
+      self.class.indices.each { |i| create_index(i) }
+      self.class.uniques.each { |i| create_index(i, :unique) }
 
       self
     end
@@ -82,8 +91,24 @@ module Shoden
       @attributes ||= []
     end
 
+    def self.indices
+      @indices ||= []
+    end
+
+    def self.uniques
+      @uniques ||= []
+    end
+
     def self.[](id)
       new(id: id).load!
+    end
+
+    def self.index(name)
+      indices << name if !indices.include?(name)
+    end
+
+    def self.unique(name)
+      uniques << name if !uniques.include?(name)
     end
 
     def self.attribute(name, caster = ->(x) { x })
@@ -122,6 +147,14 @@ module Shoden
         match(/^(?:.*::)*(.*)$/)[1].
         gsub(/([a-z\d])([A-Z])/, '\1_\2').
         downcase.to_sym
+    end
+
+    def create_index(name, type = '')
+      conn.execute <<EOS
+        CREATE #{type.upcase} INDEX index_#{self.class.name}_#{name}
+        ON "#{table_name}" (( data -> '#{name}'))
+        WHERE ( data ? '#{name}' );
+EOS
     end
 
     def sanitized_attrs

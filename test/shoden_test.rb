@@ -78,3 +78,22 @@ test 'casting' do
 
   assert_equal a_prime.n, 1
 end
+
+test 'indices' do
+  class Person < Shoden::Model
+    attribute :email
+    attribute :origin
+
+    index  :origin
+    unique :email
+  end
+
+  person = Person.create(email: 'elcuervo@elcuervo.net', origin: 'The internerd')
+
+  assert person.id
+
+  assert_raise Shoden::UniqueIndexViolation do
+    Person.create(email: 'elcuervo@elcuervo.net', origin: 'The internerd')
+  end
+
+end
