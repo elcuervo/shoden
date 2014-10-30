@@ -46,3 +46,15 @@ class Post < Shoden::Model
   reference :owner, :User
 end
 ```
+
+## Indexing
+
+```ruby
+class User < Shoden::Model
+  attribute :email
+  attribute :country
+
+  index  :country
+  unique :email
+end
+```
