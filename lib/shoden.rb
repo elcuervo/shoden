@@ -1,4 +1,5 @@
 require 'sequel'
+require 'set'
 
 Sequel.extension :pg_hstore, :pg_hstore_ops
 
@@ -25,14 +26,21 @@ module Shoden
     @_url ||= ENV['DATABASE_URL']
   end
 
+  def self.models
+    @_models ||= Set.new
+  end
+
   def self.connection
     @_connection ||= Sequel.connect(url)
   end
 
-  def self.destroy_all
-    connection.tables.select do |t|
-      connection.drop_table(t) if t.to_s.start_with?('Shoden::')
-    end
+  def self.setup
+    connection.execute("CREATE EXTENSION IF NOT EXISTS hstore")
+    models.each { |m| m.setup }
+  end
+
+  def self.destroy_tables
+    models.each { |m| m.destroy_table }
   end
 
   class Model
@@ -43,12 +51,12 @@ module Shoden
     end
 
     def id
-      raise MissingID if !defined?(@_id)
+      return nil if !defined?(@_id)
       @_id.to_i
     end
 
     def destroy
-      lookup(id).delete
+      self.class.lookup(id).delete
     end
 
     def update(attrs = {})
@@ -61,26 +69,32 @@ module Shoden
     end
 
     def save
-      if defined? @_id
-        table.where(id: @_id).update data: sanitized_attrs
-      else
-        begin
-          @_id = table.insert data: sanitized_attrs
-        rescue Sequel::UniqueConstraintViolation
-          raise UniqueIndexViolation
-        end
-      end
-
-      self.class.indices.each { |i| create_index(i) }
-      self.class.uniques.each { |i| create_index(i, :unique) }
-
+      self.class.save(self)
       self
     end
 
     def load!
-      ret = lookup(@_id)
+      ret = self.class.lookup(@_id)
+      return nil if ret.nil?
       update(ret.to_a.first[:data])
       self
+    end
+
+    def self.inherited(model)
+      Shoden.models.add(model)
+    end
+
+    def self.save(record)
+      if record.id
+        table.where(id: record.id).update(data: record.attributes)
+      else
+        begin
+          id = table.insert(data: record.attributes)
+          record.instance_variable_set(:@_id, id)
+        rescue Sequel::UniqueConstraintViolation
+          raise UniqueIndexViolation
+        end
+      end
     end
 
     def self.all
@@ -152,15 +166,25 @@ module Shoden
       end
     end
 
+    def attributes
+      sanitized = @attributes.map do |k, _|
+        val = send(k)
+        return if val.nil?
+        [k, val.to_s]
+      end.compact
+
+      Sequel::Postgres::HStore.new(sanitized)
+    end
+
     private
 
     def self.collect(condition = '')
-      models = []
+      records = []
       Shoden.connection.fetch("SELECT * FROM \"#{table_name}\" #{condition}") do |r|
         attrs = r[:data].merge(id: r[:id])
-        models << new(attrs)
+        records << new(attrs)
       end
-      models
+      records
     end
 
     def self.table_name
@@ -174,53 +198,47 @@ module Shoden
         downcase.to_sym
     end
 
-    def create_index(name, type = '')
+    def self.create_index(name, type = '')
       conn.execute <<EOS
-        CREATE #{type.upcase} INDEX index_#{self.class.name}_#{name}
+        CREATE #{type.upcase} INDEX index_#{self.name}_#{name}
         ON "#{table_name}" (( data -> '#{name}'))
         WHERE ( data ? '#{name}' );
 EOS
     end
 
-    def sanitized_attrs
-      sanitized = @attributes.map do |k, _|
-        val = send(k)
-        return if val.nil?
-        [k, val.to_s]
-      end.compact
-
-      Sequel::Postgres::HStore.new(sanitized)
-    end
-
-    def lookup(id)
-      raise NotFound if !conn.tables.include?(table_name.to_sym)
-
+    def self.lookup(id)
       row = table.where(id: id)
-      raise NotFound if !row.any?
+      return nil if !row.any?
 
       row
     end
 
-    def setup
-      Shoden.connection.execute("CREATE EXTENSION IF NOT EXISTS hstore")
-      Shoden.connection.create_table? table_name do
+    def self.setup
+      conn.create_table? table_name do
         primary_key :id
         hstore      :data
       end
+
+      indices.each { |i| create_index(i) }
+      uniques.each { |i| create_index(i, :unique) }
     end
 
-    def table_name
-      self.class.table_name
+    def self.destroy_all
+      conn.execute("DELETE FROM \"#{table_name}\"")
+    rescue Sequel::DatabaseError
     end
 
-    def table
+    def self.destroy_table
+      conn.drop_table(table_name)
+    rescue Sequel::DatabaseError
+    end
+
+    def self.table
       conn[table_name]
     end
 
-    def conn
-      c = Shoden.connection
-      @created ||= setup
-      c
+    def self.conn
+      Shoden.connection
     end
   end
 end

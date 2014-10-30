@@ -3,12 +3,35 @@ require 'shoden'
 
 Model = Class.new(Shoden::Model)
 
+class Person < Shoden::Model
+  attribute :email
+  attribute :origin
+
+  index  :origin
+  unique :email
+end
+
+class Tree < Shoden::Model
+  attribute   :name
+  collection  :sprouts, :Sprout
+end
+
+class Sprout < Shoden::Model
+  attribute :leaves
+  reference :tree, :Tree
+end
+
 class User < Shoden::Model
   attribute :name
 end
 
+class A < Shoden::Model
+  attribute :n, ->(x) { x.to_i }
+end
+
 setup do
-  Shoden.destroy_all
+  Shoden.destroy_tables
+  Shoden.setup
 end
 
 test 'model' do
@@ -38,15 +61,6 @@ test 'update' do
 end
 
 test 'relations' do
-  class Tree < Shoden::Model
-    attribute   :name
-    collection  :sprouts, :Sprout
-  end
-
-  class Sprout < Shoden::Model
-    attribute :leaves
-    reference :tree, :Tree
-  end
 
   tree = Tree.create(name: 'asd')
 
@@ -65,14 +79,10 @@ test 'deletion' do
 
   user.destroy
 
-  assert_raise(Shoden::NotFound) { User[id] }
+  assert_equal User[id], nil
 end
 
 test 'casting' do
-  class A < Shoden::Model
-    attribute :n, ->(x) { x.to_i }
-  end
-
   a = A.create(n: 1)
   a_prime = A[a.id]
 
@@ -80,14 +90,6 @@ test 'casting' do
 end
 
 test 'indices' do
-  class Person < Shoden::Model
-    attribute :email
-    attribute :origin
-
-    index  :origin
-    unique :email
-  end
-
   person = Person.create(email: 'elcuervo@elcuervo.net', origin: 'The internerd')
 
   assert person.id
@@ -98,9 +100,8 @@ test 'indices' do
 end
 
 test 'basic querying' do
+  User.destroy_all
   5.times { User.create }
 
   assert_equal User.all.size, 5
-  assert_equal User.first.id, 1
-  assert_equal User.last.id,  5
 end
