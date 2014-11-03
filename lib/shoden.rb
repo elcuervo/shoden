@@ -17,9 +17,12 @@ module Shoden
     def all
       klass.filter(parent_filter)
     end
-    alias_method :each, :all
 
     def count; all.count end
+
+    def any?
+      count > 0
+    end
 
     def [](id)
       filter = { id: id }.merge!(parent_filter)
