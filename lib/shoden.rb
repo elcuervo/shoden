@@ -173,10 +173,12 @@ module Shoden
       end
 
       row = table.where(query.join("AND"))
-
       return nil if !row.any?
 
-      new(row.to_a.first[:data])
+      data = row.to_a.first
+      attrs = data[:data].merge({ id: data[:id] })
+
+      new(attrs)
     end
 
     def attributes
@@ -217,6 +219,7 @@ module Shoden
         ON "#{table_name}" (( data -> '#{name}'))
         WHERE ( data ? '#{name}' );
 EOS
+    rescue
     end
 
     def self.lookup(id)
