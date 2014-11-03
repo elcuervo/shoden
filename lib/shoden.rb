@@ -15,13 +15,23 @@ module Shoden
     end
 
     def all
-      klass.filter(key => parent.id)
+      klass.filter(parent_filter)
     end
     alias_method :each, :all
 
     def count; all.count end
 
+    def [](id)
+      filter = { id: id }.merge!(parent_filter)
+
+      klass.filter(filter).first
+    end
+
     private
+
+    def parent_filter
+      { key => parent.id }
+    end
 
     def key
       "#{parent.class.to_reference}_id".freeze
@@ -178,12 +188,15 @@ module Shoden
 
     def self.filter(conditions = {})
       query = []
-      conditions.each do |k,v|
-        query << "data->'#{k}' = '#{v}'"
-      end
+      id = conditions.delete(:id)
+      if id
+        rows = table.where(id: id)
+      else
+        conditions.each { |k,v| query << "data->'#{k}' = '#{v}'" }
 
-      rows = table.where(query.join(" AND "))
-      return nil if !rows.any?
+        rows = table.where(query.join(" AND "))
+        return nil if !rows.any?
+      end
 
       rows.map do |row|
         attrs = row[:data].merge({ id: row[:id] })

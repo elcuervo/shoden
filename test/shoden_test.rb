@@ -79,6 +79,8 @@ test 'relations' do
   assert sprout.is_a?(Sprout)
   assert tree.sprouts.each.is_a?(Array)
 
+  assert tree.sprouts[sprout.id].id == sprout.id
+
   assert_equal tree.sprouts.count, 1
   assert_equal sprout.tree.id, tree.id
 end
