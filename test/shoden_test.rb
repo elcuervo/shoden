@@ -105,3 +105,11 @@ test 'basic querying' do
 
   assert_equal User.all.size, 5
 end
+
+test 'filtering' do
+  person = { email: 'elcuervo@elcuervo.net' }
+  Person.create(person)
+  p = Person.filter(person)
+
+  assert p.email == 'elcuervo@elcuervo.net'
+end

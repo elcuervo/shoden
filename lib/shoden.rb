@@ -166,6 +166,19 @@ module Shoden
       end
     end
 
+    def self.filter(conditions = {})
+      query = []
+      conditions.each do |k,v|
+        query << "data->'#{k}' = '#{v}'"
+      end
+
+      row = table.where(query.join("AND"))
+
+      return nil if !row.any?
+
+      new(row.to_a.first[:data])
+    end
+
     def attributes
       sanitized = @attributes.map do |k, _|
         val = send(k)
