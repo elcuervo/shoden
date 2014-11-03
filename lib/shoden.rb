@@ -172,7 +172,7 @@ module Shoden
         query << "data->'#{k}' = '#{v}'"
       end
 
-      row = table.where(query.join("AND"))
+      row = table.where(query.join(" AND "))
       return nil if !row.any?
 
       data = row.to_a.first
