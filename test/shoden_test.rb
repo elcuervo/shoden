@@ -60,8 +60,15 @@ test 'update' do
   assert_equal user.name, 'Cyril'
 end
 
-test 'relations' do
+test 'filtering' do
+  person = { email: 'elcuervo@elcuervo.net' }
+  Person.create(person)
+  p = Person.filter(person).first
 
+  assert p.email == 'elcuervo@elcuervo.net'
+end
+
+test 'relations' do
   tree = Tree.create(name: 'asd')
 
   assert tree.id
@@ -70,6 +77,9 @@ test 'relations' do
   sprout = tree.sprouts.create(leaves: 4)
 
   assert sprout.is_a?(Sprout)
+  assert tree.sprouts.each.is_a?(Array)
+
+  assert_equal tree.sprouts.count, 1
   assert_equal sprout.tree.id, tree.id
 end
 
@@ -104,12 +114,4 @@ test 'basic querying' do
   5.times { User.create }
 
   assert_equal User.all.size, 5
-end
-
-test 'filtering' do
-  person = { email: 'elcuervo@elcuervo.net' }
-  Person.create(person)
-  p = Person.filter(person)
-
-  assert p.email == 'elcuervo@elcuervo.net'
 end

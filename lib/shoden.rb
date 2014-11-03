@@ -11,10 +11,20 @@ module Shoden
 
   Proxy = Struct.new(:klass, :parent) do
     def create(args = {})
-      key = "#{parent.class.to_reference}_id"
-      klass.create(args.merge(
-        key => parent.id
-      ))
+      klass.create(args.merge(key => parent.id))
+    end
+
+    def all
+      klass.filter(key => parent.id)
+    end
+    alias_method :each, :all
+
+    def count; all.count end
+
+    private
+
+    def key
+      "#{parent.class.to_reference}_id".freeze
     end
   end
 
@@ -172,13 +182,14 @@ module Shoden
         query << "data->'#{k}' = '#{v}'"
       end
 
-      row = table.where(query.join(" AND "))
-      return nil if !row.any?
+      rows = table.where(query.join(" AND "))
+      return nil if !rows.any?
 
-      data = row.to_a.first
-      attrs = data[:data].merge({ id: data[:id] })
+      rows.map do |row|
+        attrs = row[:data].merge({ id: row[:id] })
 
-      new(attrs)
+        new(attrs)
+      end
     end
 
     def attributes
