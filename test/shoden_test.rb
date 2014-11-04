@@ -77,7 +77,7 @@ test 'relations' do
   sprout = tree.sprouts.create(leaves: 4)
 
   assert sprout.is_a?(Sprout)
-  assert tree.sprouts.each.is_a?(Array)
+  assert tree.sprouts.all.each.is_a?(Enumerator)
 
   assert tree.sprouts[sprout.id].id == sprout.id
 
