@@ -1,0 +1,14 @@
+language: ruby
+
+rvm:
+  - "1.9.3"
+  - "2.0.0"
+
+services: postgresql
+
+before_script:
+  - psql -c 'create database shoden_test;' -U postgres
+
+env:
+  global:
+    - DATABASE_URL=postgres://localhost:5432/shoden_test
