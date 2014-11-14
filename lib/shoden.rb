@@ -15,10 +15,15 @@ module Shoden
     end
 
     def all
-      klass.filter(parent_filter)
+      items = klass.filter(parent_filter)
+      return [] if items.nil?
+
+      items
     end
 
-    def count; all.count end
+    def count
+      all.count
+    end
 
     def any?
       count > 0
@@ -198,7 +203,7 @@ module Shoden
         conditions.each { |k,v| query << "data->'#{k}' = '#{v}'" }
 
         rows = table.where(query.join(" AND "))
-        return nil if !rows.any?
+        return [] if !rows.any?
       end
 
       rows.map do |row|
