@@ -15,10 +15,7 @@ module Shoden
     end
 
     def all
-      items = klass.filter(parent_filter)
-      return [] if items.nil?
-
-      items
+      klass.filter(parent_filter)
     end
 
     def count
@@ -238,7 +235,7 @@ module Shoden
         rows = Shoden.connection.fetch(sql) || []
       end
 
-      rows.map do |row|
+      rows.lazy.map do |row|
         attrs = row[:data].merge({ id: row[:id] })
 
         new(attrs)
