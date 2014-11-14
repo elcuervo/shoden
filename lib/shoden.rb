@@ -22,11 +22,21 @@ module Shoden
     end
 
     def count
-      all.count
+      klass.count
     end
 
     def any?
       count > 0
+    end
+
+    def first
+      filter = { order: "id ASC LIMIT 1" }.merge!(parent_filter)
+      klass.filter(filter).first
+    end
+
+    def last
+      filter = { order: "id DESC LIMIT 1" }.merge!(parent_filter)
+      klass.filter(filter).first
     end
 
     def [](id)
@@ -59,7 +69,14 @@ module Shoden
   end
 
   def self.connection
-    @_connection ||= Sequel.connect(url)
+    loggers = []
+
+    if ENV["DEBUG"]
+      require 'logger'
+      loggers << Logger.new($stdout)
+    end
+
+    @_connection ||= Sequel.connect(url, loggers: loggers)
   end
 
   def self.setup
@@ -127,6 +144,15 @@ module Shoden
 
     def self.all
       collect
+    end
+
+    def self.count
+      size = 0
+      Shoden.connection.fetch("SELECT COUNT(*) FROM \"#{table_name}\"") do |r|
+        size = r[:count]
+      end
+
+      size
     end
 
     def self.first
@@ -197,13 +223,19 @@ module Shoden
     def self.filter(conditions = {})
       query = []
       id = conditions.delete(:id)
+      order = conditions.delete(:order)
       if id
         rows = table.where(id: id)
       else
         conditions.each { |k,v| query << "data->'#{k}' = '#{v}'" }
+        seek_conditions = query.join(" AND ")
 
-        rows = table.where(query.join(" AND "))
-        return [] if !rows.any?
+        where = "WHERE (#{seek_conditions})"
+        order_condition = "ORDER BY #{order}" if order
+
+        sql = "#{base_query} #{where} #{order_condition}"
+
+        rows = Shoden.connection.fetch(sql) || []
       end
 
       rows.map do |row|
@@ -224,6 +256,10 @@ module Shoden
     end
 
     private
+
+    def self.base_query
+      "SELECT * FROM \"#{table_name}\""
+    end
 
     def self.collect(condition = '')
       records = []

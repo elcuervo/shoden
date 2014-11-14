@@ -83,6 +83,8 @@ test 'relations' do
 
   assert_equal tree.sprouts.count, 1
   assert_equal sprout.tree.id, tree.id
+  assert tree.sprouts.first != nil
+  assert tree.sprouts.last != nil
 end
 
 test 'deletion' do
@@ -116,4 +118,5 @@ test 'basic querying' do
   5.times { User.create }
 
   assert_equal User.all.size, 5
+
 end
