@@ -221,13 +221,16 @@ module Shoden
       query = []
       id = conditions.delete(:id)
       order = conditions.delete(:order)
-      if id
+
+      if id && !conditions.any?
         rows = table.where(id: id)
       else
         conditions.each { |k,v| query << "data->'#{k}' = '#{v}'" }
         seek_conditions = query.join(" AND ")
 
         where = "WHERE (#{seek_conditions})"
+
+        where += " AND id = '#{id}'"          if id
         order_condition = "ORDER BY #{order}" if order
 
         sql = "#{base_query} #{where} #{order_condition}"
