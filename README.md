@@ -12,6 +12,20 @@ Postgres as a main database.
 gem install shoden
 ```
 
+## Connect
+
+Shoden connects by default using a `DATABASE_URL` env variable.
+But you can change the connection string by calling `Shoden.url=`
+
+## Setup
+
+Shoden needs a setup method to create the proper tables.
+You should do that after connecting
+
+```ruby
+Shoden.setup
+```
+
 ## Models
 
 ```ruby
@@ -47,6 +61,17 @@ class Post < Shoden::Model
 end
 ```
 
+## Attributes
+
+Shoden attributes offer you a way to type cast the values, or to perform changes
+in the data itself.
+
+```ruby
+class Shout < Shoden::Model
+  attribute :what, ->(x) { x.uppcase }
+end
+```
+
 ## Indexing
 
 ```ruby
@@ -58,3 +83,17 @@ class User < Shoden::Model
   unique :email
 end
 ```
+
+## Querying
+
+You can query models or relations using the `filter` method.
+
+```ruby
+User.filter(email: "elcuervo@elcuervo.net")
+User.first
+User.last
+User.count
+```
+
+You can go through the entire set using: `User.all` which will give you a
+`Enumerator::Lazy`

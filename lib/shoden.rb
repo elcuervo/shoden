@@ -282,7 +282,7 @@ module Shoden
     end
 
     def self.create_index(name, type = '')
-      conn.execute <<EOS
+      Shoden.connection.execute <<EOS
         CREATE #{type.upcase} INDEX index_#{self.name}_#{name}
         ON "#{table_name}" (( data -> '#{name}'))
         WHERE ( data ? '#{name}' );
@@ -298,7 +298,7 @@ EOS
     end
 
     def self.setup
-      conn.create_table? table_name do
+      Shoden.connection.create_table? table_name do
         primary_key :id
         hstore      :data
       end
@@ -308,21 +308,17 @@ EOS
     end
 
     def self.destroy_all
-      conn.execute("DELETE FROM \"#{table_name}\"")
+      Shoden.connection.execute("DELETE FROM \"#{table_name}\"")
     rescue Sequel::DatabaseError
     end
 
     def self.destroy_table
-      conn.drop_table(table_name)
+      Shoden.connection.drop_table(table_name)
     rescue Sequel::DatabaseError
     end
 
     def self.table
-      conn[table_name]
-    end
-
-    def self.conn
-      Shoden.connection
+      Shoden.connection[table_name]
     end
   end
 end

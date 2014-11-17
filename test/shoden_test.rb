@@ -118,5 +118,4 @@ test 'basic querying' do
   5.times { User.create }
 
   assert_equal User.all.size, 5
-
 end
