@@ -19,7 +19,8 @@ module Shoden
     end
 
     def count
-      klass.count
+      row = klass.query(fields: "COUNT(id)", conditions: parent_filter)
+      row.first[:count]
     end
 
     def any?
@@ -218,12 +219,22 @@ module Shoden
     end
 
     def self.filter(conditions = {})
+      rows = self.query(conditions: conditions)
+
+      rows.lazy.map do |row|
+        attrs = row[:data].merge({ id: row[:id] })
+
+        new(attrs)
+      end
+    end
+
+    def self.query(fields: "*", conditions: {})
       query = []
       id = conditions.delete(:id)
       order = conditions.delete(:order)
 
       if id && !conditions.any?
-        rows = table.where(id: id)
+        table.where(id: id)
       else
         conditions.each { |k,v| query << "data->'#{k}' = '#{v}'" }
         seek_conditions = query.join(" AND ")
@@ -233,15 +244,9 @@ module Shoden
         where += " AND id = '#{id}'"          if id
         order_condition = "ORDER BY #{order}" if order
 
-        sql = "#{base_query} #{where} #{order_condition}"
+        sql = "#{base_query(fields)} #{where} #{order_condition}"
 
-        rows = Shoden.connection.fetch(sql) || []
-      end
-
-      rows.lazy.map do |row|
-        attrs = row[:data].merge({ id: row[:id] })
-
-        new(attrs)
+        Shoden.connection.fetch(sql) || []
       end
     end
 
@@ -257,8 +262,8 @@ module Shoden
 
     private
 
-    def self.base_query
-      "SELECT * FROM \"#{table_name}\""
+    def self.base_query(fields = "*")
+      "SELECT #{fields} FROM \"#{table_name}\""
     end
 
     def self.collect(condition = '')

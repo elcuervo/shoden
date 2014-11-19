@@ -70,11 +70,13 @@ end
 
 test 'relations' do
   tree = Tree.create(name: 'asd')
+  tree2 = Tree.create(name: 'qwe')
 
   assert tree.id
   assert_equal tree.name, 'asd'
 
   sprout = tree.sprouts.create(leaves: 4)
+  sprout2 = tree2.sprouts.create(leaves: 5)
 
   assert sprout.is_a?(Sprout)
   assert tree.sprouts.all.each.is_a?(Enumerator)
