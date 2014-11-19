@@ -241,7 +241,7 @@ module Shoden
 
         where = "WHERE (#{seek_conditions})"
 
-        where += " AND id = '#{id}'"          if id
+        where += " AND id = '#{Integer(id)}'"          if id
         order_condition = "ORDER BY #{order}" if order
 
         sql = "#{base_query(fields)} #{where} #{order_condition}"
