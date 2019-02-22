@@ -1,5 +1,5 @@
-require 'cutest'
-require 'shoden'
+require "cutest"
+require "shoden"
 
 Model = Class.new(Shoden::Model)
 
@@ -36,7 +36,7 @@ end
 
 test 'model' do
   model = Model.create
-  assert_equal model.id.class, Fixnum
+  assert_equal model.id.class, Integer
 end
 
 test 'attributes' do
@@ -76,7 +76,7 @@ test 'relations' do
   assert_equal tree.name, 'asd'
 
   sprout = tree.sprouts.create(leaves: 4)
-  sprout2 = tree2.sprouts.create(leaves: 5)
+  tree2.sprouts.create(leaves: 5)
 
   assert sprout.is_a?(Sprout)
   assert tree.sprouts.all.each.is_a?(Enumerator)

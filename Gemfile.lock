@@ -1,0 +1,23 @@
+PATH
+  remote: .
+  specs:
+    shoden (1.0)
+
+GEM
+  remote: http://rubygems.org/
+  specs:
+    clap (1.0.0)
+    cutest (1.2.3)
+      clap
+    rake (12.3.2)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  cutest (~> 1.2)
+  rake
+  shoden!
+
+BUNDLED WITH
+   1.17.2
