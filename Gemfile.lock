@@ -2,13 +2,15 @@ PATH
   remote: .
   specs:
     shoden (1.0)
+      pg (~> 1.1)
 
 GEM
-  remote: http://rubygems.org/
+  remote: https://rubygems.org/
   specs:
     clap (1.0.0)
     cutest (1.2.3)
       clap
+    pg (1.1.4)
     rake (12.3.2)
 
 PLATFORMS
