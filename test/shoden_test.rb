@@ -96,8 +96,8 @@ test "relations" do
   assert tree.sprouts.any?
   assert_equal tree.sprouts.count, 1
   assert_equal sprout.tree.id, tree.id
-  assert tree.sprouts.first != nil
-  assert tree.sprouts.last != nil
+  assert !tree.sprouts.first.nil?
+  assert !tree.sprouts.last.nil?
 end
 
 test "deletion" do

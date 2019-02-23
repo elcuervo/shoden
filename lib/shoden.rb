@@ -13,7 +13,7 @@ module Shoden
   end
 
   def self.url
-    @_url ||= ENV['DATABASE_URL']
+    @_url ||= ENV["DATABASE_URL"]
   end
 
   def self.models
@@ -23,18 +23,15 @@ module Shoden
   def self.connection
     @_connection ||= begin
       uri = URI.parse(url)
-      conn = PG.connect(uri.hostname, uri.port, nil, nil, uri.path[1..-1], uri.user, uri.password)
-      conn.set_error_verbosity(PG::PQERRORS_VERBOSE)
-
-      conn
+      PG.connect(uri.hostname, uri.port, nil, nil, uri.path[1..-1], uri.user, uri.password)
     end
   end
 
   def self.setup
-    models.each { |m| m.setup }
+    models.each(&:setup)
   end
 
   def self.destroy_tables
-    models.each { |m| m.destroy_table }
+    models.each(&:destroy_table)
   end
 end

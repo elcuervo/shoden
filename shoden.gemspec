@@ -4,7 +4,7 @@ Gem::Specification.new do |s|
   s.summary           = "Object hash mapper for postgres"
   s.description       = "Slim postgres models"
   s.authors           = ["elcuervo"]
-  s.licenses          = ["MIT", "HUGWARE"]
+  s.licenses          = %w[MIT HUGWARE]
   s.email             = ["yo@brunoaguirre.com"]
   s.homepage          = "http://github.com/elcuervo/shoden"
   s.files             = `git ls-files`.split("\n")

@@ -11,7 +11,7 @@ module Shoden
     end
 
     def id
-      return nil if !defined?(@_id)
+      return nil unless defined?(@_id)
       @_id.to_i
     end
 
@@ -101,15 +101,15 @@ module Shoden
     end
 
     def self.index(name)
-      indices << name if !indices.include?(name)
+      indices << name unless indices.include?(name)
     end
 
     def self.unique(name)
-      uniques << name if !uniques.include?(name)
+      uniques << name unless uniques.include?(name)
     end
 
     def self.attribute(name, caster = ->(x) { x })
-      attributes << name if !attributes.include?(name)
+      attributes << name unless attributes.include?(name)
 
       define_method(name) { caster[@attributes[name]] }
       define_method(:"#{name}=") { |value| @attributes[name] = value }
@@ -126,7 +126,7 @@ module Shoden
       reader = :"#{name}_id"
       writer = :"#{name}_id="
 
-      attributes << name if !attributes.include?(name)
+      attributes << name unless attributes.include?(name)
 
       define_method(reader) { @attributes[reader] }
       define_method(writer) { |value| @attributes[reader] = value }
@@ -138,7 +138,7 @@ module Shoden
     end
 
     def self.filter(conditions = {})
-      rows = self.query(conditions: conditions)
+      rows = query(conditions: conditions)
 
       rows.lazy.map do |row|
         data = from_json(row["data"])
@@ -152,16 +152,16 @@ module Shoden
       id = conditions.delete(:id)
       order = conditions.delete(:order)
 
-      if id && !conditions.any?
+      if id && conditions.none?
         sql = "#{base_query(fields)} WHERE id = $1"
         Shoden.connection.exec_params(sql, [id]) || []
       else
         count = conditions.count
-        where = count.times.map { |i| "data->>$#{2*i+1} = $#{2*i+2}" }
+        where = count.times.map { |i| "data->>$#{2 * i + 1} = $#{2 * i + 2}" }
         params = conditions.flatten
 
         if id
-          where << "id = $#{count*2 + 1}"
+          where << "id = $#{count * 2 + 1}"
           params << id
         end
 
@@ -183,7 +183,7 @@ module Shoden
       "SELECT #{fields} FROM \"#{table_name}\""
     end
 
-    def self.collect(condition = '')
+    def self.collect(condition = "")
       records = []
       Shoden.connection.exec("SELECT * FROM \"#{table_name}\" #{condition}").each do |row|
         data = from_json(row["data"])
@@ -196,17 +196,17 @@ module Shoden
     end
 
     def self.table_name
-      :"Shoden::#{self.name}"
+      :"Shoden::#{name}"
     end
 
     def self.to_reference
-      name.to_s.
-        match(/^(?:.*::)*(.*)$/)[1].
-        gsub(/([a-z\d])([A-Z])/, '\1_\2').
-        downcase.to_sym
+      name.to_s
+          .match(/^(?:.*::)*(.*)$/)[1]
+          .gsub(/([a-z\d])([A-Z])/, '\1_\2')
+          .downcase.to_sym
     end
 
-    def self.create_index(name, type = '')
+    def self.create_index(name, type = "")
       query = <<EOS
         CREATE #{type.upcase} INDEX index_#{self.name}_#{name}
         ON "#{table_name}" (( data ->> '#{name}'))
@@ -219,7 +219,7 @@ EOS
     def self.lookup(id)
       query = "SELECT * FROM \"#{table_name}\" WHERE id = $1"
       row = Shoden.connection.exec_params(query, [id])
-      return nil if !row.any?
+      return nil if row.none?
 
       row
     end
