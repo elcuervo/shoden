@@ -68,12 +68,8 @@ module Shoden
     end
 
     def self.count
-      size = 0
-      Shoden.connection.exec("SELECT COUNT(*) FROM \"#{table_name}\"") do |r|
-        size = r["count"]
-      end
-
-      size
+      query = "SELECT COUNT(*) FROM \"#{table_name}\""
+      Shoden.connection.exec(query).first["count"].to_i
     end
 
     def self.first
@@ -153,24 +149,27 @@ module Shoden
     end
 
     def self.query(fields: "*", conditions: {})
-      query = []
       id = conditions.delete(:id)
       order = conditions.delete(:order)
 
       if id && !conditions.any?
-        table.where(id: id)
+        sql = "#{base_query(fields)} WHERE id = $1"
+        Shoden.connection.exec_params(sql, [id]) || []
       else
-        conditions.each { |k,v| query << "data->>'#{k}' = '#{v}'" }
-        seek_conditions = query.join(" AND ")
+        count = conditions.count
+        where = count.times.map { |i| "data->>$#{2*i+1} = $#{2*i+2}" }
+        params = conditions.flatten
 
-        where = "WHERE (#{seek_conditions})"
+        if id
+          where << "id = $#{count*2 + 1}"
+          params << id
+        end
 
-        where += " AND id = '#{Integer(id)}'"          if id
+        where = where.join(" AND ")
         order_condition = "ORDER BY #{order}" if order
+        sql = "#{base_query(fields)} WHERE #{where} #{order_condition}"
 
-        sql = "#{base_query(fields)} #{where} #{order_condition}"
-
-        Shoden.connection.exec(sql) || []
+        Shoden.connection.exec_params(sql, params) || []
       end
     end
 

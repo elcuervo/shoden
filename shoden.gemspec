@@ -13,4 +13,5 @@ Gem::Specification.new do |s|
   s.add_dependency("pg", "~> 1.1")
 
   s.add_development_dependency("cutest", "~> 1.2")
+  s.add_development_dependency("simplecov", "~> 0.16")
 end

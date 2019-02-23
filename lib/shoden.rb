@@ -21,13 +21,6 @@ module Shoden
   end
 
   def self.connection
-    loggers = []
-
-    if ENV["DEBUG"]
-      require 'logger'
-      loggers << Logger.new($stdout)
-    end
-
     @_connection ||= begin
       uri = URI.parse(url)
       conn = PG.connect(uri.hostname, uri.port, nil, nil, uri.path[1..-1], uri.user, uri.password)
