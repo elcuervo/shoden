@@ -1,4 +1,4 @@
-# Shôden - [![Gem Version](https://badge.fury.io/rb/shoden.svg)](http://badge.fury.io/rb/shoden) - [![Build Status](https://travis-ci.org/elcuervo/shoden.svg)](https://travis-ci.org/elcuervo/shoden)
+# Shôden - [![Build Status](https://travis-ci.org/elcuervo/shoden.svg)](https://travis-ci.org/elcuervo/shoden)
 
 ![Elephant god](https://images.unsplash.com/photo-1523190301657-195ef118bb36?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1500&q=80)
 
