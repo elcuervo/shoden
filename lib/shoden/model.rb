@@ -1,3 +1,4 @@
+require "json"
 require "shoden/proxy"
 
 module Shoden
@@ -207,11 +208,11 @@ module Shoden
     end
 
     def self.create_index(name, type = "")
-      query = <<EOS
+      query = <<~EOS
         CREATE #{type.upcase} INDEX index_#{self.name}_#{name}
         ON "#{table_name}" (( data ->> '#{name}'))
         WHERE ( data ? '#{name}' );
-EOS
+      EOS
 
       Shoden.connection.exec(query)
     end
@@ -225,12 +226,12 @@ EOS
     end
 
     def self.setup
-      Shoden.connection.exec <<EOS
+      Shoden.connection.exec <<~EOS
         CREATE TABLE IF NOT EXISTS \"#{table_name}\" (
           id   SERIAL NOT NULL PRIMARY KEY,
           data JSONB
         )
-EOS
+      EOS
 
       indices.each { |i| create_index(i) }
       uniques.each { |i| create_index(i, :unique) }
