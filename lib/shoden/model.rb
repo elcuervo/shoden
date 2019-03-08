@@ -74,11 +74,11 @@ module Shoden
     end
 
     def self.first
-      collect("ORDER BY id ASC LIMIT 1").first
+      collect(order: "id ASC", limit: 1).first
     end
 
     def self.last
-      collect("ORDER BY id DESC LIMIT 1").first
+      collect(order: "id DESC", limit: 1).first
     end
 
     def self.create(attrs = {})
@@ -184,16 +184,27 @@ module Shoden
       "SELECT #{fields} FROM \"#{table_name}\""
     end
 
-    def self.collect(condition = "")
-      records = []
-      Shoden.connection.exec("SELECT * FROM \"#{table_name}\" #{condition}").each do |row|
-        data = from_json(row["data"])
-        data[:id] = row["id"].to_i
+    def self.collect(order: :id, limit: 0)
+      query = base_query("*")
 
-        records << new(data)
+      params = [].tap do |item|
+        item << order
+        query << " ORDER BY $1"
+
+        if limit > 0
+          item << limit
+          query << " LIMIT $2 "
+        end
       end
 
-      records
+      [].tap do |records|
+        Shoden.connection.exec_params(query, params).each do |row|
+          data = from_json(row["data"])
+          data[:id] = row["id"].to_i
+
+          records << new(data)
+        end
+      end
     end
 
     def self.table_name
