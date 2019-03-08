@@ -3,8 +3,7 @@
 ![Elephant god](https://images.unsplash.com/photo-1523190301657-195ef118bb36?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1500&q=80)
 
 Shôden is a persistance library on top of Postgres.
-It is basically an [Ohm](https://github.com/soveran/ohm) clone but using
-Postgres as a main database.
+Uses JSONB as an storage abstraction so no need for migrations.
 
 ## Installation
 
